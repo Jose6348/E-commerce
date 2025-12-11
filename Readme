@@ -1,98 +1,70 @@
-# E-Commerce Platform
+# E-Commerce Platform (Next.js + Prisma)
 
-A modern e-commerce solution built with scalability and user experience in mind.
+Production-ready e-commerce template built with Next.js (pages router), React (TypeScript), PostgreSQL, and Prisma. Includes public storefront, cart/checkout, user accounts, and admin panel with product/order management.
 
-## 🚀 Features
-
-- **Product Catalog** - Browse and search products with advanced filtering
-- **Shopping Cart** - Add, remove, and manage items in your cart
-- **User Authentication** - Secure login and registration system
-- **Order Management** - Track orders and view order history
-- **Payment Integration** - Secure payment processing
-- **Admin Dashboard** - Manage products, orders, and users
-- **Responsive Design** - Works seamlessly on desktop and mobile devices
-
-## 📋 Prerequisites
-
-- Node.js (v14 or higher)
-- npm or yarn
-- Database (PostgreSQL/MongoDB)
-
-## 🔧 Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/ecommerce.git
-cd ecommerce
+## Project Structure
+```
+.
+├── pages
+│   ├── index.tsx                 # Home
+│   ├── products/                 # Listing + product details
+│   ├── category/[slug].tsx       # Category listing
+│   ├── cart.tsx                  # Cart view
+│   ├── checkout.tsx              # Checkout flow
+│   ├── login.tsx / register.tsx  # Auth pages
+│   ├── account/orders            # Customer order history
+│   ├── admin                     # Admin dashboard + CRUD
+│   └── api                       # Next.js API routes (auth, products, cart, orders, stats)
+├── prisma
+│   ├── schema.prisma             # Data model
+│   └── seed.ts                   # Seed admin + sample data
+├── lib
+│   ├── prisma.ts                 # Prisma client singleton
+│   ├── auth.ts                   # JWT helpers + guards
+│   └── validators.ts             # Zod validation schemas
+├── styles/globals.css            # Base styling
+├── package.json
+├── tsconfig.json
+└── .env.example
 ```
 
-2. Install dependencies:
-```bash
-npm install
+## Environment Variables
+Create `.env` (or export via your secret manager):
+```
+DATABASE_URL="postgresql://USER:PASSWORD@localhost:5432/ecommerce"
+JWT_SECRET="supersecretjwt"
+NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 ```
 
-3. Create a `.env` file with your environment variables:
-```
-DATABASE_URL=your_database_url
-API_KEY=your_api_key
-PORT=3000
-```
+## Prisma Schema (summary)
+Key models: `User`, `Category`, `Product`, `Cart`, `CartItem`, `Address`, `Order`, `OrderItem` plus `Role` and `OrderStatus` enums. See [`prisma/schema.prisma`](prisma/schema.prisma) for the full definition.
 
-4. Start the development server:
-```bash
-npm run dev
-```
+## Next.js Routes (pages router)
+- Storefront: `/`, `/products`, `/products/[slug]`, `/category/[slug]`
+- User: `/login`, `/register`, `/cart`, `/checkout`, `/account/orders`, `/account/orders/[id]`
+- Admin: `/admin`, `/admin/products`, `/admin/products/new`, `/admin/products/[id]`, `/admin/orders`, `/admin/orders/[id]`
+- APIs: `/api/auth/login`, `/api/auth/register`, `/api/products`, `/api/products/[id]`, `/api/categories`, `/api/categories/[id]`, `/api/cart`, `/api/orders`, `/api/orders/[id]`, `/api/orders/checkout`, `/api/admin/stats`
 
-The application will be available at `http://localhost:3000`
+## How to Run
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Generate Prisma client and run migrations:
+   ```bash
+   npx prisma generate
+   npx prisma migrate dev --name init
+   ```
+3. Seed database (creates admin user `admin@example.com` / `admin123` plus sample catalog):
+   ```bash
+   npx prisma db seed --preview-feature || npm run prisma:seed
+   ```
+4. Start development server:
+   ```bash
+   npm run dev
+   ```
 
-## 📦 Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm test` - Run tests
-
-## 🏗️ Project Structure
-
-```
-├── src/
-│   ├── components/     # Reusable UI components
-│   ├── pages/          # Page components
-│   ├── services/       # API services
-│   ├── utils/          # Utility functions
-│   └── styles/         # Global styles
-├── public/             # Static files
-├── tests/              # Test files
-└── package.json
-```
-
-## 🔐 Security
-
-- All sensitive data is stored in environment variables
-- Passwords are hashed using bcrypt
-- HTTPS is enforced in production
-- CSRF protection enabled
-
-## 📝 API Documentation
-
-See [API_DOCS.md](API_DOCS.md) for detailed API endpoints documentation.
-
-## 🤝 Contributing
-
-1. Create a new branch (`git checkout -b feature/amazing-feature`)
-2. Commit your changes (`git commit -m 'Add amazing feature'`)
-3. Push to the branch (`git push origin feature/amazing-feature`)
-4. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 📧 Support
-
-For support, email support@ecommerce.com or open an issue on GitHub.
-
-## 🙏 Acknowledgments
-
-- Thanks to all contributors
-- Inspired by modern e-commerce platforms
+## Notes
+- Auth uses stateless JWT stored in HttpOnly cookie (`ecom_token`).
+- Admin-only routes enforce `Role.ADMIN` guard in the API layer.
+- Checkout creates orders from the authenticated user's cart and stores the shipping address record.
